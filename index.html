@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>互娱二维码</title>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -14,18 +15,25 @@ body {
   font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 .card {
-  background: #ffffff; border-radius: 20px; padding: 40px 36px 32px;
-  width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); text-align: center;
+  background: #ffffff; border-radius: 20px; padding: 32px 36px 28px;
+  width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); text-align: center;
 }
 h1 {
   font-size: 28px; font-weight: 700;
   background: linear-gradient(135deg, #667eea, #e84c8b);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text; margin-bottom: 6px;
+  background-clip: text; margin-bottom: 16px;
 }
-.subtitle { font-size: 13px; color: #999; margin-bottom: 24px; }
+.tabs { display: flex; gap: 0; margin-bottom: 20px; border-radius: 10px; overflow: hidden; border: 2px solid #e0e0e0; }
+.tab {
+  flex: 1; padding: 10px 0; font-size: 14px; font-weight: 600; cursor: pointer;
+  border: none; background: #f8f8f8; color: #999; transition: all 0.2s;
+}
+.tab.active { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+.panel { display: none; }
+.panel.active { display: block; }
 .input-group {
-  display: flex; gap: 0; border: 2px solid #e0e0e0; border-radius: 10px;
+  display: flex; border: 2px solid #e0e0e0; border-radius: 10px;
   overflow: hidden; transition: border-color 0.3s;
 }
 .input-group:focus-within { border-color: #667eea; }
@@ -44,7 +52,7 @@ h1 {
 .option label { display: block; font-size: 12px; color: #888; margin-bottom: 4px; }
 .option input[type="color"] { width: 100%; height: 34px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; }
 .option select { width: 100%; padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none; }
-.qr-wrap { margin: 20px 0 16px; min-height: 200px; display: flex; justify-content: center; align-items: center; }
+.qr-wrap { margin: 20px 0 16px; min-height: 200px; display: flex; justify-content: center; align-items: center; flex-direction: column; }
 .qr-wrap .placeholder { color: #ccc; font-size: 14px; }
 .qr-wrap img, .qr-wrap canvas { border-radius: 12px; }
 .actions { display: flex; gap: 12px; }
@@ -52,59 +60,130 @@ h1 {
   flex: 1; padding: 11px 0; border-radius: 10px; border: none;
   font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
 }
-.btn-download {
-  background: linear-gradient(135deg, #43e97b, #38f9d7); color: #fff;
-}
+.btn-download { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #fff; }
 .btn-download:hover { opacity: 0.9; transform: translateY(-1px); }
-.btn-clear {
-  background: #f5f5f5; color: #666;
-}
+.btn-clear { background: #f5f5f5; color: #666; }
 .btn-clear:hover { background: #eee; }
 .actions button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 .tip { margin-top: 16px; font-size: 11px; color: #bbb; }
+
+/* Scan panel styles */
+.drop-zone {
+  border: 2px dashed #d0d0d0; border-radius: 14px; padding: 36px 20px;
+  cursor: pointer; transition: border-color 0.3s, background 0.3s;
+  margin-bottom: 16px;
+}
+.drop-zone:hover, .drop-zone.dragover { border-color: #667eea; background: #f8f6ff; }
+.drop-zone .icon { font-size: 42px; margin-bottom: 8px; }
+.drop-zone p { font-size: 13px; color: #999; }
+.drop-zone p strong { color: #667eea; }
+.preview-img { max-width: 200px; max-height: 200px; border-radius: 10px; margin-bottom: 12px; display: none; }
+.scan-status { font-size: 13px; color: #999; margin-bottom: 10px; min-height: 20px; }
+.result-box {
+  background: #f8f6ff; border: 1px solid #e0d8f0; border-radius: 10px;
+  padding: 14px; margin: 10px 0; display: none; text-align: left;
+}
+.result-box .label { font-size: 11px; color: #888; margin-bottom: 4px; }
+.result-box .text {
+  font-size: 13px; color: #333; word-break: break-all;
+  max-height: 80px; overflow-y: auto; line-height: 1.5;
+}
+.result-box .text.is-url { color: #667eea; text-decoration: underline; cursor: pointer; }
+.result-actions { display: flex; gap: 8px; margin-top: 8px; display: none; }
+.result-actions button {
+  flex: 1; padding: 8px 0; border-radius: 8px; border: none;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.btn-copy { background: #f0f0f0; color: #555; }
+.btn-to-gen {
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+}
 </style>
 </head>
 <body>
 <div class="card">
   <h1>互娱二维码</h1>
-  <p class="subtitle">输入链接或文本，即刻生成二维码</p>
 
-  <div class="input-group">
-    <input id="textInput" type="text" placeholder="输入网址或文本内容..." autofocus>
-    <button id="generateBtn">生成</button>
+  <div class="tabs">
+    <button class="tab active" id="tabGen">生成二维码</button>
+    <button class="tab" id="tabScan">识别二维码</button>
   </div>
 
-  <div class="options">
-    <div class="option">
-      <label>前景色</label>
-      <input type="color" id="fgColor" value="#000000">
+  <!-- 生成面板 -->
+  <div class="panel active" id="panelGen">
+    <div class="input-group">
+      <input id="textInput" type="text" placeholder="输入网址或文本内容..." autofocus>
+      <button id="generateBtn">生成</button>
     </div>
-    <div class="option">
-      <label>背景色</label>
-      <input type="color" id="bgColor" value="#ffffff">
+
+    <div class="options">
+      <div class="option">
+        <label>前景色</label>
+        <input type="color" id="fgColor" value="#000000">
+      </div>
+      <div class="option">
+        <label>背景色</label>
+        <input type="color" id="bgColor" value="#ffffff">
+      </div>
+      <div class="option">
+        <label>尺寸</label>
+        <select id="sizeSelect">
+          <option value="180">小 (180px)</option>
+          <option value="240" selected>中 (240px)</option>
+          <option value="320">大 (320px)</option>
+        </select>
+      </div>
     </div>
-    <div class="option">
-      <label>尺寸</label>
-      <select id="sizeSelect">
-        <option value="180">小 (180px)</option>
-        <option value="240" selected>中 (240px)</option>
-        <option value="320">大 (320px)</option>
-      </select>
+
+    <div class="qr-wrap" id="qrWrap">
+      <span class="placeholder">二维码将显示在这里</span>
     </div>
+
+    <div class="actions">
+      <button class="btn-download" id="downloadBtn" disabled>下载图片</button>
+      <button class="btn-clear" id="clearBtn">清空</button>
+    </div>
+    <p class="tip">支持网址、文本、名片信息等 · 点击下载保存 PNG 图片</p>
   </div>
 
-  <div class="qr-wrap" id="qrWrap">
-    <span class="placeholder">二维码将显示在这里</span>
+  <!-- 识别面板 -->
+  <div class="panel" id="panelScan">
+    <div class="drop-zone" id="dropZone">
+      <div class="icon">📷</div>
+      <p>拖拽图片到此处，或 <strong>点击上传</strong></p>
+      <p style="font-size:11px;margin-top:4px;">支持 JPG / PNG / GIF / BMP</p>
+      <input type="file" id="fileInput" accept="image/*" style="display:none">
+    </div>
+    <img class="preview-img" id="previewImg" alt="预览">
+    <div class="scan-status" id="scanStatus"></div>
+    <div class="result-box" id="resultBox">
+      <div class="label">识别结果</div>
+      <div class="text" id="resultText"></div>
+    </div>
+    <div class="result-actions" id="resultActions">
+      <button class="btn-copy" id="copyBtn">复制内容</button>
+      <button class="btn-to-gen" id="toGenBtn">生成此二维码</button>
+    </div>
   </div>
-
-  <div class="actions">
-    <button class="btn-download" id="downloadBtn" disabled>下载图片</button>
-    <button class="btn-clear" id="clearBtn">清空</button>
-  </div>
-  <p class="tip">支持网址、文本、名片信息等 · 点击下载保存 PNG 图片</p>
 </div>
 
 <script>
+// ====== Tab switching ======
+const tabGen = document.getElementById("tabGen");
+const tabScan = document.getElementById("tabScan");
+const panelGen = document.getElementById("panelGen");
+const panelScan = document.getElementById("panelScan");
+
+tabGen.addEventListener("click", function() {
+  tabGen.classList.add("active"); tabScan.classList.remove("active");
+  panelGen.classList.add("active"); panelScan.classList.remove("active");
+});
+tabScan.addEventListener("click", function() {
+  tabScan.classList.add("active"); tabGen.classList.remove("active");
+  panelScan.classList.add("active"); panelGen.classList.remove("active");
+});
+
+// ====== Generate QR ======
 let qrCode = null;
 const textInput = document.getElementById("textInput");
 const qrWrap = document.getElementById("qrWrap");
@@ -113,17 +192,14 @@ const fgColor = document.getElementById("fgColor");
 const bgColor = document.getElementById("bgColor");
 const sizeSelect = document.getElementById("sizeSelect");
 
-function generate() {
-  const text = textInput.value.trim();
-  if (!text) return;
+function generate(text) {
+  const t = text || textInput.value.trim();
+  if (!t) return;
   qrWrap.innerHTML = "";
   const size = parseInt(sizeSelect.value);
   qrCode = new QRCode(qrWrap, {
-    text: text,
-    width: size,
-    height: size,
-    colorDark: fgColor.value,
-    colorLight: bgColor.value,
+    text: t, width: size, height: size,
+    colorDark: fgColor.value, colorLight: bgColor.value,
     correctLevel: QRCode.CorrectLevel.H,
   });
   downloadBtn.disabled = false;
@@ -138,20 +214,106 @@ function download() {
   a.click();
 }
 
-document.getElementById("generateBtn").addEventListener("click", generate);
+document.getElementById("generateBtn").addEventListener("click", function() { generate(); });
 textInput.addEventListener("keydown", function(e) { if (e.key === "Enter") generate(); });
 downloadBtn.addEventListener("click", download);
-
 document.getElementById("clearBtn").addEventListener("click", function() {
   textInput.value = "";
   qrWrap.innerHTML = '<span class="placeholder">二维码将显示在这里</span>';
   qrCode = null;
   downloadBtn.disabled = true;
 });
-
 fgColor.addEventListener("change", function() { if (qrCode) generate(); });
 bgColor.addEventListener("change", function() { if (qrCode) generate(); });
 sizeSelect.addEventListener("change", function() { if (qrCode) generate(); });
+
+// ====== Scan QR ======
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+const previewImg = document.getElementById("previewImg");
+const scanStatus = document.getElementById("scanStatus");
+const resultBox = document.getElementById("resultBox");
+const resultText = document.getElementById("resultText");
+const resultActions = document.getElementById("resultActions");
+
+dropZone.addEventListener("click", function() { fileInput.click(); });
+fileInput.addEventListener("change", function(e) { handleFile(e.target.files[0]); });
+
+dropZone.addEventListener("dragover", function(e) {
+  e.preventDefault(); dropZone.classList.add("dragover");
+});
+dropZone.addEventListener("dragleave", function() {
+  dropZone.classList.remove("dragover");
+});
+dropZone.addEventListener("drop", function(e) {
+  e.preventDefault(); dropZone.classList.remove("dragover");
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+
+function handleFile(file) {
+  if (!file || !file.type.startsWith("image/")) {
+    scanStatus.textContent = "请选择图片文件";
+    return;
+  }
+  scanStatus.textContent = "正在识别...";
+  resultBox.style.display = "none";
+  resultActions.style.display = "none";
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      previewImg.src = e.target.result;
+      previewImg.style.display = "block";
+
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+      if (code) {
+        scanStatus.textContent = "✓ 识别成功";
+        scanStatus.style.color = "#27ae60";
+        resultText.textContent = code.data;
+        resultText.className = "text";
+        if (/^https?:\/\//i.test(code.data)) {
+          resultText.classList.add("is-url");
+          resultText.title = "点击打开链接";
+          resultText.onclick = function() { window.open(code.data, "_blank"); };
+        }
+        resultBox.style.display = "block";
+        resultActions.style.display = "flex";
+        resultActions.dataset.text = code.data;
+      } else {
+        scanStatus.textContent = "✗ 未识别到二维码，请尝试更清晰的图片";
+        scanStatus.style.color = "#e74c3c";
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById("copyBtn").addEventListener("click", function() {
+  const text = resultActions.dataset.text;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(function() {
+    scanStatus.textContent = "✓ 已复制到剪贴板";
+    scanStatus.style.color = "#27ae60";
+  });
+});
+
+document.getElementById("toGenBtn").addEventListener("click", function() {
+  const text = resultActions.dataset.text;
+  if (!text) return;
+  textInput.value = text;
+  tabGen.click();
+  generate(text);
+});
 </script>
 </body>
 </html>
