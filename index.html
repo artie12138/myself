@@ -503,8 +503,8 @@ document.addEventListener('DOMContentLoaded', function() {
       var img = new Image();
       img.onload = function() {
         try {
-          // Target very small image — data URL must be short for scannable QR
-          var maxDim = 30;
+          // Tiny thumbnail → short data URL → low-version QR → easy to scan
+          var maxDim = 16;
           var ow = img.width, oh = img.height;
           var w, h;
           var ratio = ow / oh;
@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', function() {
           ctx.clearRect(0, 0, w, h);
           ctx.drawImage(img, 0, 0, w, h);
 
-          var dataUrl = imgThumb.toDataURL('image/jpeg', 0.06);
+          var dataUrl = imgThumb.toDataURL('image/jpeg', 0.04);
           var bytes = Math.round(dataUrl.length * 0.75);
           imgInfo.textContent = '编码: ' + dataUrl.length + ' 字符 (~' + bytes + ' bytes)';
 
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
           imgQrBox.innerHTML = '';
           imgQrCode = new QRCode(imgQrBox, {
-            text: dataUrl, width: 200, height: 200,
+            text: dataUrl, width: 280, height: 280,
             colorDark: '#000000', colorLight: '#ffffff',
             correctLevel: QRCode.CorrectLevel.L
           });
