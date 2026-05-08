@@ -11,8 +11,8 @@
 body {
   min-height: 100vh; padding: 16px;
   background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-  display: flex; justify-content: center; align-items: center;
-  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  display: flex; justify-content: center; align-items: flex-start;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; padding-top: 24px;
 }
 .card {
   background: #ffffff; border-radius: 20px; padding: 28px 20px;
@@ -24,10 +24,10 @@ h1 {
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text; margin-bottom: 14px;
 }
-.tabs { display: flex; gap: 0; margin-bottom: 18px; border-radius: 10px; overflow: hidden; border: 2px solid #e0e0e0; }
+.tabs { display: flex; margin-bottom: 18px; border-radius: 10px; overflow: hidden; border: 2px solid #e0e0e0; }
 .tab {
-  flex: 1; padding: 12px 0; font-size: 15px; font-weight: 600; cursor: pointer;
-  border: none; background: #f8f8f8; color: #999; transition: all 0.2s;
+  flex: 1; padding: 10px 4px; font-size: 13px; font-weight: 600; cursor: pointer;
+  border: none; background: #f8f8f8; color: #999; transition: all 0.2s; line-height: 1.2;
 }
 .tab.active { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
 .panel { display: none; }
@@ -67,7 +67,6 @@ h1 {
 .actions button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 .tip { margin-top: 14px; font-size: 12px; color: #bbb; }
 
-/* Scan panel styles */
 .drop-zone {
   border: 2px dashed #d0d0d0; border-radius: 14px; padding: 30px 16px;
   cursor: pointer; transition: border-color 0.3s, background 0.3s;
@@ -96,15 +95,17 @@ h1 {
 }
 .btn-copy { background: #f0f0f0; color: #555; }
 .btn-copy:active { background: #e0e0e0; }
-.btn-to-gen {
-  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
-}
+.btn-to-gen { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
 .btn-to-gen:active { opacity: 0.8; }
+
+.img2qr-preview-row { display: flex; gap: 16px; align-items: center; justify-content: center; margin: 14px 0; }
+.img2qr-thumb { border-radius: 10px; border: 2px solid #e0e0e0; object-fit: contain; }
+.img2qr-info { font-size: 11px; color: #999; margin-bottom: 4px; }
 
 @media (max-width: 380px) {
   .card { padding: 22px 14px; }
   h1 { font-size: 22px; }
-  .tab { font-size: 13px; padding: 10px 0; }
+  .tab { font-size: 11px; padding: 8px 2px; }
   .input-group input { font-size: 14px; padding: 10px 10px; }
   .input-group button { font-size: 13px; padding: 10px 14px; }
   .options { gap: 8px; margin: 12px 0; }
@@ -123,50 +124,37 @@ h1 {
   <div class="tabs">
     <button class="tab active" id="tabGen">生成二维码</button>
     <button class="tab" id="tabScan">识别二维码</button>
+    <button class="tab" id="tabImg2qr">图片转码</button>
   </div>
 
-  <!-- 生成面板 -->
+  <!-- 面板1: 生成二维码 -->
   <div class="panel active" id="panelGen">
     <div class="input-group">
       <input id="textInput" type="text" placeholder="输入网址或文本内容..." autofocus>
       <button id="generateBtn">生成</button>
     </div>
-
     <div class="options">
-      <div class="option">
-        <label>前景色</label>
-        <input type="color" id="fgColor" value="#000000">
-      </div>
-      <div class="option">
-        <label>背景色</label>
-        <input type="color" id="bgColor" value="#ffffff">
-      </div>
-      <div class="option">
-        <label>尺寸</label>
+      <div class="option"><label>前景色</label><input type="color" id="fgColor" value="#000000"></div>
+      <div class="option"><label>背景色</label><input type="color" id="bgColor" value="#ffffff"></div>
+      <div class="option"><label>尺寸</label>
         <select id="sizeSelect">
-          <option value="180">小 (180px)</option>
-          <option value="240" selected>中 (240px)</option>
-          <option value="320">大 (320px)</option>
+          <option value="180">小</option><option value="240" selected>中</option><option value="320">大</option>
         </select>
       </div>
     </div>
-
-    <div class="qr-wrap" id="qrWrap">
-      <span class="placeholder">二维码将显示在这里</span>
-    </div>
-
+    <div class="qr-wrap" id="qrWrap"><span class="placeholder">二维码将显示在这里</span></div>
     <div class="actions">
       <button class="btn-download" id="downloadBtn" disabled>下载图片</button>
       <button class="btn-clear" id="clearBtn">清空</button>
     </div>
-    <p class="tip">支持网址、文本、名片信息等 · 点击下载保存 PNG 图片</p>
+    <p class="tip">支持网址、文本、名片信息等</p>
   </div>
 
-  <!-- 识别面板 -->
+  <!-- 面板2: 识别二维码 -->
   <div class="panel" id="panelScan">
     <div class="drop-zone" id="dropZone">
       <div class="icon">📷</div>
-      <p>拖拽图片到此处，或 <strong>点击上传</strong></p>
+      <p>点击上传含二维码的图片</p>
       <p style="font-size:11px;margin-top:4px;">支持 JPG / PNG / GIF / BMP</p>
       <input type="file" id="fileInput" accept="image/*" style="display:none">
     </div>
@@ -177,29 +165,65 @@ h1 {
       <div class="text" id="resultText"></div>
     </div>
     <div class="result-actions" id="resultActions">
-      <button class="btn-copy" id="copyBtn">复制内容</button>
-      <button class="btn-to-gen" id="toGenBtn">生成此二维码</button>
+      <button class="btn-copy" id="copyBtn">复制</button>
+      <button class="btn-to-gen" id="toGenBtn">生成二维码</button>
     </div>
+  </div>
+
+  <!-- 面板3: 图片转二维码 -->
+  <div class="panel" id="panelImg2qr">
+    <div class="drop-zone" id="img2qrDrop">
+      <div class="icon">🖼️</div>
+      <p>上传图片，生成专属二维码</p>
+      <p style="font-size:11px;margin-top:4px;">图像将压缩编码后存入二维码中</p>
+      <input type="file" id="img2qrInput" accept="image/*" style="display:none">
+    </div>
+    <div class="scan-status" id="img2qrStatus"></div>
+    <div class="img2qr-preview-row" id="img2qrPreviewRow" style="display:none;">
+      <div>
+        <div class="label" style="font-size:11px;color:#888;margin-bottom:4px;">原图压缩后</div>
+        <canvas id="img2qrThumb" class="img2qr-thumb" style="width:100px;height:100px;"></canvas>
+      </div>
+      <span style="font-size:20px;color:#ccc;">→</span>
+      <div>
+        <div class="label" style="font-size:11px;color:#888;margin-bottom:4px;">生成的二维码</div>
+        <div id="img2qrWrap"></div>
+      </div>
+    </div>
+    <div class="img2qr-info" id="img2qrSizeInfo"></div>
+    <div class="actions" style="margin-top:8px;">
+      <button class="btn-download" id="img2qrDownload" disabled>下载二维码</button>
+      <button class="btn-clear" id="img2qrClear">清空</button>
+    </div>
+    <p class="tip">扫描二维码可直接查看图片内容</p>
   </div>
 </div>
 
 <script>
+(function() {
 // ====== Tab switching ======
-const tabGen = document.getElementById("tabGen");
-const tabScan = document.getElementById("tabScan");
-const panelGen = document.getElementById("panelGen");
-const panelScan = document.getElementById("panelScan");
+const tabs = {
+  tabGen: document.getElementById("tabGen"),
+  tabScan: document.getElementById("tabScan"),
+  tabImg2qr: document.getElementById("tabImg2qr"),
+};
+const panels = {
+  panelGen: document.getElementById("panelGen"),
+  panelScan: document.getElementById("panelScan"),
+  panelImg2qr: document.getElementById("panelImg2qr"),
+};
 
-tabGen.addEventListener("click", function() {
-  tabGen.classList.add("active"); tabScan.classList.remove("active");
-  panelGen.classList.add("active"); panelScan.classList.remove("active");
-});
-tabScan.addEventListener("click", function() {
-  tabScan.classList.add("active"); tabGen.classList.remove("active");
-  panelScan.classList.add("active"); panelGen.classList.remove("active");
-});
+function switchTab(name) {
+  Object.keys(tabs).forEach(function(k) {
+    tabs[k].classList.toggle("active", k === name);
+    panels[k].classList.toggle("active", k === name);
+  });
+}
+tabs.tabGen.addEventListener("click", function() { switchTab("tabGen"); });
+tabs.tabScan.addEventListener("click", function() { switchTab("tabScan"); });
+tabs.tabImg2qr.addEventListener("click", function() { switchTab("tabImg2qr"); });
 
-// ====== Generate QR ======
+// ====== Panel 1: Generate QR ======
 let qrCode = null;
 const textInput = document.getElementById("textInput");
 const qrWrap = document.getElementById("qrWrap");
@@ -208,7 +232,7 @@ const fgColor = document.getElementById("fgColor");
 const bgColor = document.getElementById("bgColor");
 const sizeSelect = document.getElementById("sizeSelect");
 
-function generate(text) {
+window._gen = function(text) {
   const t = text || textInput.value.trim();
   if (!t) return;
   qrWrap.innerHTML = "";
@@ -219,31 +243,29 @@ function generate(text) {
     correctLevel: QRCode.CorrectLevel.H,
   });
   downloadBtn.disabled = false;
-}
+};
 
-function download() {
-  const canvas = qrWrap.querySelector("canvas");
+function download(wrap, name) {
+  const canvas = wrap.querySelector("canvas");
   if (!canvas) return;
   const a = document.createElement("a");
-  a.download = "互娱二维码.png";
+  a.download = name || "互娱二维码.png";
   a.href = canvas.toDataURL("image/png");
   a.click();
 }
 
-document.getElementById("generateBtn").addEventListener("click", function() { generate(); });
-textInput.addEventListener("keydown", function(e) { if (e.key === "Enter") generate(); });
-downloadBtn.addEventListener("click", download);
+document.getElementById("generateBtn").addEventListener("click", function() { window._gen(); });
+textInput.addEventListener("keydown", function(e) { if (e.key === "Enter") window._gen(); });
+downloadBtn.addEventListener("click", function() { download(qrWrap); });
 document.getElementById("clearBtn").addEventListener("click", function() {
-  textInput.value = "";
-  qrWrap.innerHTML = '<span class="placeholder">二维码将显示在这里</span>';
-  qrCode = null;
-  downloadBtn.disabled = true;
+  textInput.value = ""; qrWrap.innerHTML = '<span class="placeholder">二维码将显示在这里</span>';
+  qrCode = null; downloadBtn.disabled = true;
 });
-fgColor.addEventListener("change", function() { if (qrCode) generate(); });
-bgColor.addEventListener("change", function() { if (qrCode) generate(); });
-sizeSelect.addEventListener("change", function() { if (qrCode) generate(); });
+fgColor.addEventListener("change", function() { if (qrCode) window._gen(); });
+bgColor.addEventListener("change", function() { if (qrCode) window._gen(); });
+sizeSelect.addEventListener("change", function() { if (qrCode) window._gen(); });
 
-// ====== Scan QR ======
+// ====== Panel 2: Scan QR ======
 const dropZone = document.getElementById("dropZone");
 const fileInput = document.getElementById("fileInput");
 const previewImg = document.getElementById("previewImg");
@@ -253,60 +275,44 @@ const resultText = document.getElementById("resultText");
 const resultActions = document.getElementById("resultActions");
 
 dropZone.addEventListener("click", function() { fileInput.click(); });
-fileInput.addEventListener("change", function(e) { handleFile(e.target.files[0]); });
+fileInput.addEventListener("change", function(e) { scanFile(e.target.files[0]); });
 
-dropZone.addEventListener("dragover", function(e) {
-  e.preventDefault(); dropZone.classList.add("dragover");
-});
-dropZone.addEventListener("dragleave", function() {
-  dropZone.classList.remove("dragover");
-});
+dropZone.addEventListener("dragover", function(e) { e.preventDefault(); dropZone.classList.add("dragover"); });
+dropZone.addEventListener("dragleave", function() { dropZone.classList.remove("dragover"); });
 dropZone.addEventListener("drop", function(e) {
   e.preventDefault(); dropZone.classList.remove("dragover");
-  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  if (e.dataTransfer.files.length) scanFile(e.dataTransfer.files[0]);
 });
 
-function handleFile(file) {
+function scanFile(file) {
   if (!file || !file.type.startsWith("image/")) {
-    scanStatus.textContent = "请选择图片文件";
-    return;
+    scanStatus.textContent = "请选择图片文件"; scanStatus.style.color = "#e74c3c"; return;
   }
-  scanStatus.textContent = "正在识别...";
-  resultBox.style.display = "none";
-  resultActions.style.display = "none";
+  scanStatus.textContent = "正在识别..."; scanStatus.style.color = "#999";
+  resultBox.style.display = "none"; resultActions.style.display = "none";
 
   const reader = new FileReader();
   reader.onload = function(e) {
     const img = new Image();
     img.onload = function() {
-      previewImg.src = e.target.result;
-      previewImg.style.display = "block";
-
+      previewImg.src = e.target.result; previewImg.style.display = "block";
       const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = img.width; canvas.height = img.height;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0);
-
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(imageData.data, canvas.width, canvas.height);
-
       if (code) {
-        scanStatus.textContent = "✓ 识别成功";
-        scanStatus.style.color = "#27ae60";
+        scanStatus.textContent = "✓ 识别成功"; scanStatus.style.color = "#27ae60";
         resultText.textContent = code.data;
-        resultText.className = "text";
+        resultText.className = "text" + (/^https?:\/\//i.test(code.data) ? " is-url" : "");
         if (/^https?:\/\//i.test(code.data)) {
-          resultText.classList.add("is-url");
-          resultText.title = "点击打开链接";
           resultText.onclick = function() { window.open(code.data, "_blank"); };
         }
-        resultBox.style.display = "block";
-        resultActions.style.display = "flex";
+        resultBox.style.display = "block"; resultActions.style.display = "flex";
         resultActions.dataset.text = code.data;
       } else {
-        scanStatus.textContent = "✗ 未识别到二维码，请尝试更清晰的图片";
-        scanStatus.style.color = "#e74c3c";
+        scanStatus.textContent = "✗ 未识别到二维码"; scanStatus.style.color = "#e74c3c";
       }
     };
     img.src = e.target.result;
@@ -318,8 +324,7 @@ document.getElementById("copyBtn").addEventListener("click", function() {
   const text = resultActions.dataset.text;
   if (!text) return;
   navigator.clipboard.writeText(text).then(function() {
-    scanStatus.textContent = "✓ 已复制到剪贴板";
-    scanStatus.style.color = "#27ae60";
+    scanStatus.textContent = "✓ 已复制到剪贴板"; scanStatus.style.color = "#27ae60";
   });
 });
 
@@ -327,9 +332,94 @@ document.getElementById("toGenBtn").addEventListener("click", function() {
   const text = resultActions.dataset.text;
   if (!text) return;
   textInput.value = text;
-  tabGen.click();
-  generate(text);
+  switchTab("tabGen");
+  window._gen(text);
 });
+
+// ====== Panel 3: Image to QR ======
+const img2qrDrop = document.getElementById("img2qrDrop");
+const img2qrInput = document.getElementById("img2qrInput");
+const img2qrStatus = document.getElementById("img2qrStatus");
+const img2qrWrap = document.getElementById("img2qrWrap");
+const img2qrThumb = document.getElementById("img2qrThumb");
+const img2qrPreviewRow = document.getElementById("img2qrPreviewRow");
+const img2qrSizeInfo = document.getElementById("img2qrSizeInfo");
+const img2qrDownload = document.getElementById("img2qrDownload");
+
+let img2qrCode = null;
+
+img2qrDrop.addEventListener("click", function() { img2qrInput.click(); });
+img2qrInput.addEventListener("change", function(e) { encodeImageToQR(e.target.files[0]); });
+
+img2qrDrop.addEventListener("dragover", function(e) { e.preventDefault(); img2qrDrop.classList.add("dragover"); });
+img2qrDrop.addEventListener("dragleave", function() { img2qrDrop.classList.remove("dragover"); });
+img2qrDrop.addEventListener("drop", function(e) {
+  e.preventDefault(); img2qrDrop.classList.remove("dragover");
+  if (e.dataTransfer.files.length) encodeImageToQR(e.dataTransfer.files[0]);
+});
+
+document.getElementById("img2qrDownload").addEventListener("click", function() { download(img2qrWrap, "图片二维码.png"); });
+document.getElementById("img2qrClear").addEventListener("click", function() {
+  img2qrInput.value = ""; img2qrWrap.innerHTML = "";
+  img2qrThumb.getContext("2d").clearRect(0, 0, img2qrThumb.width, img2qrThumb.height);
+  img2qrPreviewRow.style.display = "none"; img2qrSizeInfo.textContent = "";
+  img2qrStatus.textContent = ""; img2qrCode = null; img2qrDownload.disabled = true;
+});
+
+function encodeImageToQR(file) {
+  if (!file || !file.type.startsWith("image/")) {
+    img2qrStatus.textContent = "请选择图片文件"; img2qrStatus.style.color = "#e74c3c"; return;
+  }
+  img2qrStatus.textContent = "正在压缩编码..."; img2qrStatus.style.color = "#999";
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      // Compress to very small thumbnail
+      const maxDim = 80;
+      let w = img.width, h = img.height;
+      if (w > h) { w = Math.min(w, maxDim); h = Math.round(h * w / img.width); }
+      else { h = Math.min(h, maxDim); w = Math.round(w * h / img.height); }
+
+      const canvas = img2qrThumb;
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+
+      // Try progressively lower quality until data URL fits QR capacity (~2800 chars)
+      let dataUrl = "";
+      for (let q = 0.6; q >= 0.05; q -= 0.05) {
+        dataUrl = canvas.toDataURL("image/jpeg", q);
+        if (dataUrl.length < 2800) break;
+      }
+
+      const bytes = Math.round(dataUrl.length * 0.75);
+      img2qrSizeInfo.textContent = "编码大小: " + dataUrl.length + " 字符 (~" + bytes + " bytes)";
+
+      if (dataUrl.length > 2900) {
+        img2qrStatus.textContent = "图片过大，请换小一点的图片"; img2qrStatus.style.color = "#e74c3c";
+        img2qrPreviewRow.style.display = "none"; return;
+      }
+
+      img2qrStatus.textContent = "✓ 生成成功，扫描二维码即可查看图片"; img2qrStatus.style.color = "#27ae60";
+      img2qrPreviewRow.style.display = "flex";
+
+      img2qrWrap.innerHTML = "";
+      img2qrCode = new QRCode(img2qrWrap, {
+        text: dataUrl,
+        width: 120,
+        height: 120,
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+      img2qrDownload.disabled = false;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+})();
 </script>
 </body>
 </html>
