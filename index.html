@@ -478,9 +478,9 @@ document.addEventListener('DOMContentLoaded', function() {
   var imgInfo = document.getElementById('imgInfo');
   var imgDownload = document.getElementById('imgDownload');
 
-  imgDrop.addEventListener('click', function() { imgFileInput.click(); });
+  imgDrop.addEventListener('click', function() { imgFileInput.value = ''; imgFileInput.click(); });
   imgFileInput.addEventListener('change', function() {
-    if (this.files.length) doImgEncode(this.files[0]);
+    if (this.files && this.files.length) doImgEncode(this.files[0]);
   });
 
   imgDrop.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('on'); });
@@ -497,52 +497,51 @@ document.addEventListener('DOMContentLoaded', function() {
     imgStatus.textContent = '正在压缩编码...'; imgStatus.style.color = '#999';
     imgRow.style.display = 'none';
     imgDownload.disabled = true;
+    imgQrBox.innerHTML = '';
 
     var reader = new FileReader();
     reader.onload = function(ev) {
-      var img = new Image();
-      img.onload = function() {
+      var imgEl = new Image();
+      imgEl.onload = function() {
+        // compress to 20px thumbnail — enough detail, short data URL
+        var maxDim = 20;
+        var ow = imgEl.width, oh = imgEl.height;
+        var w, h;
+        var ratio = ow / oh;
+        if (ratio >= 1) { w = maxDim; h = Math.max(1, Math.round(w / ratio)); }
+        else { h = maxDim; w = Math.max(1, Math.round(h * ratio)); }
+
+        imgThumb.width = w; imgThumb.height = h;
+        var ctx = imgThumb.getContext('2d');
+        ctx.clearRect(0, 0, w, h);
+        ctx.drawImage(imgEl, 0, 0, w, h);
+
+        var dataUrl = imgThumb.toDataURL('image/jpeg', 0.04);
+        var bytes = Math.round(dataUrl.length * 0.75);
+        imgInfo.textContent = '编码: ' + dataUrl.length + ' 字符 (~' + bytes + ' bytes)';
+
+        if (dataUrl.length > 2900) {
+          imgStatus.textContent = '图片复杂度过高，请换一张简单图片'; imgStatus.style.color = '#e74c3c';
+          return;
+        }
+
         try {
-          // Tiny thumbnail → short data URL → low-version QR → easy to scan
-          var maxDim = 16;
-          var ow = img.width, oh = img.height;
-          var w, h;
-          var ratio = ow / oh;
-          if (ratio >= 1) { w = Math.min(ow, maxDim); h = Math.max(1, Math.round(w / ratio)); }
-          else { h = Math.min(oh, maxDim); w = Math.max(1, Math.round(h * ratio)); }
-
-          imgThumb.width = w; imgThumb.height = h;
-          var ctx = imgThumb.getContext('2d');
-          ctx.clearRect(0, 0, w, h);
-          ctx.drawImage(img, 0, 0, w, h);
-
-          var dataUrl = imgThumb.toDataURL('image/jpeg', 0.04);
-          var bytes = Math.round(dataUrl.length * 0.75);
-          imgInfo.textContent = '编码: ' + dataUrl.length + ' 字符 (~' + bytes + ' bytes)';
-
-          if (dataUrl.length > 2900) {
-            imgStatus.textContent = '图片复杂度过高，请换一张简单图片'; imgStatus.style.color = '#e74c3c';
-            return;
-          }
-
-          imgQrBox.innerHTML = '';
           imgQrCode = new QRCode(imgQrBox, {
             text: dataUrl, width: 280, height: 280,
             colorDark: '#000000', colorLight: '#ffffff',
             correctLevel: QRCode.CorrectLevel.L
           });
-
           imgStatus.textContent = '生成成功，扫描二维码即可查看图片'; imgStatus.style.color = '#27ae60';
           imgRow.style.display = 'flex';
           imgDownload.disabled = false;
         } catch(err) {
-          imgStatus.textContent = '编码失败: ' + err.message; imgStatus.style.color = '#e74c3c';
+          imgStatus.textContent = 'QR生成失败: ' + err.message; imgStatus.style.color = '#e74c3c';
         }
       };
-      img.onerror = function() {
+      imgEl.onerror = function() {
         imgStatus.textContent = '图片加载失败，请尝试其他图片'; imgStatus.style.color = '#e74c3c';
       };
-      img.src = ev.target.result;
+      imgEl.src = ev.target.result;
     };
     reader.onerror = function() {
       imgStatus.textContent = '文件读取失败'; imgStatus.style.color = '#e74c3c';
