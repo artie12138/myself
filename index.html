@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>互娱二维码</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <style>
@@ -22,12 +23,36 @@ body {
   box-shadow:
     4px 4px 0 #2a2a4a,
     8px 8px 0 #15152a,
-    0 0 40px rgba(102, 126, 234, 0.2),
+    0 0 30px rgba(102, 126, 234, 0.15),
+    0 0 80px rgba(102, 126, 234, 0.08),
+    0 0 120px rgba(167, 94, 234, 0.05),
     inset 0 0 60px rgba(0,0,0,0.3);
   width: 100%; max-width: 440px; text-align: center;
   position: relative; z-index: 1;
   padding: 0;
   image-rendering: pixelated;
+  animation: crtFlicker 4s ease-in-out infinite;
+}
+@keyframes crtFlicker {
+  0%, 100% { box-shadow: 4px 4px 0 #2a2a4a, 8px 8px 0 #15152a, 0 0 30px rgba(102,126,234,0.15), 0 0 80px rgba(102,126,234,0.08), 0 0 120px rgba(167,94,234,0.05), inset 0 0 60px rgba(0,0,0,0.3); }
+  50% { box-shadow: 4px 4px 0 #2a2a4a, 8px 8px 0 #15152a, 0 0 35px rgba(102,126,234,0.2), 0 0 90px rgba(102,126,234,0.12), 0 0 140px rgba(167,94,234,0.08), inset 0 0 60px rgba(0,0,0,0.3); }
+}
+
+/* pixel divider between logo and card */
+.px-divider {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 28px; z-index: 1;
+}
+.px-divider .px-line {
+  width: 60px; height: 4px; background: repeating-linear-gradient(90deg, #667eea 0, #667eea 8px, transparent 8px, transparent 12px);
+}
+.px-divider .px-diamond {
+  width: 12px; height: 12px; background: #ff4757; transform: rotate(45deg);
+  box-shadow: 0 0 8px rgba(255,71,87,0.5);
+  animation: diamondPulse 1.5s ease-in-out infinite;
+}
+@keyframes diamondPulse {
+  0%, 100% { opacity: 0.6; transform: rotate(45deg) scale(0.8); }
+  50% { opacity: 1; transform: rotate(45deg) scale(1.2); }
 }
 /* screen area */
 .screen {
@@ -55,16 +80,17 @@ body {
   box-shadow: -20px 0 0 #667eea, -40px 0 0 #2ed573, -60px 0 0 #ffa502;
 }
 #pixel-logo {
-  position: relative; z-index: 1; margin-bottom: 20px; margin-top: 8px;
+  position: relative; z-index: 1; margin-bottom: 36px; margin-top: 20px;
   display: flex; align-items: center; justify-content: center; gap: 8px;
 }
 #pixel-logo .char-block {
   width: 56px; height: 56px; border-radius: 4px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 32px; font-weight: 900; color: #fff; position: relative;
-  font-family: 'PingFang SC', 'Microsoft YaHei', monospace;
+  font-size: 30px; font-weight: 900; color: #fff; position: relative;
+  font-family: 'Press Start 2P', 'PingFang SC', monospace;
   text-shadow: 0 3px 0 rgba(0,0,0,0.35);
   animation: logoBounce 2s ease-in-out infinite;
+  letter-spacing: -2px;
 }
 #pixel-logo .char-block:nth-child(1) { animation-delay: 0s; }
 #pixel-logo .char-block:nth-child(2) { animation-delay: 0.15s; }
@@ -226,6 +252,11 @@ input[type=text]:focus, textarea:focus { border-color: #667eea; box-shadow: 0 0 
   <div class="char-block cb-orange"><span class="px-dot"></span><span class="px-dot"></span>二</div>
   <div class="char-block cb-green"><span class="px-dot"></span><span class="px-dot"></span>维</div>
   <div class="char-block cb-blue"><span class="px-dot"></span><span class="px-dot"></span>码</div>
+</div>
+<div class="px-divider">
+  <div class="px-line"></div>
+  <div class="px-diamond"></div>
+  <div class="px-line"></div>
 </div>
 <div class="card">
 
