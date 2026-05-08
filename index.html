@@ -216,7 +216,7 @@ const panels = {
 function switchTab(name) {
   Object.keys(tabs).forEach(function(k) {
     tabs[k].classList.toggle("active", k === name);
-    panels[k].classList.toggle("active", k === name);
+    panels[k.replace("tab", "panel")].classList.toggle("active", k === name);
   });
 }
 tabs.tabGen.addEventListener("click", function() { switchTab("tabGen"); });
