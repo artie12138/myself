@@ -495,48 +495,75 @@ document.addEventListener('DOMContentLoaded', function() {
       imgStatus.textContent = '请选择图片文件'; imgStatus.style.color = '#e74c3c'; return;
     }
     imgStatus.textContent = '正在压缩编码...'; imgStatus.style.color = '#999';
+    imgRow.style.display = 'none';
+    imgDownload.disabled = true;
 
     var reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function(ev) {
       var img = new Image();
       img.onload = function() {
-        var maxDim = 60;
-        var w = img.width, h = img.height;
-        if (w > h) { w = Math.min(w, maxDim); h = Math.round(h * w / img.width); }
-        else { h = Math.min(h, maxDim); w = Math.round(w * h / img.height); }
-        if (w < 1) w = 1; if (h < 1) h = 1;
+        try {
+          var maxDim = 60;
+          var ow = img.width, oh = img.height;
+          var w, h;
+          var ratio = ow / oh;
+          if (ratio >= 1) {
+            w = Math.min(ow, maxDim);
+            h = Math.round(w / ratio);
+          } else {
+            h = Math.min(oh, maxDim);
+            w = Math.round(h * ratio);
+          }
+          if (w < 1) w = 1; if (h < 1) h = 1;
 
-        imgThumb.width = w; imgThumb.height = h;
-        var ctx = imgThumb.getContext('2d');
-        ctx.clearRect(0, 0, w, h);
-        ctx.drawImage(img, 0, 0, w, h);
+          imgThumb.width = w; imgThumb.height = h;
+          var ctx = imgThumb.getContext('2d');
+          ctx.clearRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
 
-        var dataUrl = null;
-        for (var q = 0.5; q >= 0.03; q -= 0.03) {
-          var test = imgThumb.toDataURL('image/jpeg', q);
-          if (test.length < 2500) { dataUrl = test; break; }
+          // aggressive compression — try to fit in ~2500 chars
+          var dataUrl = imgThumb.toDataURL('image/jpeg', 0.08);
+          if (dataUrl.length > 2900) {
+            // retry with even smaller canvas
+            var m2 = 40;
+            var w2, h2;
+            if (ratio >= 1) { w2 = m2; h2 = Math.round(w2 / ratio); }
+            else { h2 = m2; w2 = Math.round(h2 * ratio); }
+            if (w2 < 1) w2 = 1; if (h2 < 1) h2 = 1;
+            imgThumb.width = w2; imgThumb.height = h2;
+            ctx.clearRect(0, 0, w2, h2);
+            ctx.drawImage(img, 0, 0, w2, h2);
+            dataUrl = imgThumb.toDataURL('image/jpeg', 0.05);
+          }
+
+          var bytes = Math.round(dataUrl.length * 0.75);
+          imgInfo.textContent = '编码: ' + dataUrl.length + ' 字符 (~' + bytes + ' bytes)';
+
+          if (dataUrl.length > 2900) {
+            imgStatus.textContent = '图片内容过于复杂，请换一张简单的图片'; imgStatus.style.color = '#e74c3c';
+            return;
+          }
+
+          imgQrBox.innerHTML = '';
+          imgQrCode = new QRCode(imgQrBox, {
+            text: dataUrl, width: 110, height: 110,
+            correctLevel: QRCode.CorrectLevel.L
+          });
+
+          imgStatus.textContent = '生成成功，扫描二维码即可查看图片'; imgStatus.style.color = '#27ae60';
+          imgRow.style.display = 'flex';
+          imgDownload.disabled = false;
+        } catch(err) {
+          imgStatus.textContent = '编码失败: ' + err.message; imgStatus.style.color = '#e74c3c';
         }
-        if (!dataUrl) { dataUrl = imgThumb.toDataURL('image/jpeg', 0.03); }
-
-        var bytes = Math.round(dataUrl.length * 0.75);
-        imgInfo.textContent = '编码大小: ' + dataUrl.length + ' 字符 (~' + bytes + ' bytes)';
-
-        if (dataUrl.length > 2900) {
-          imgStatus.textContent = '图片过大，请使用更小的图片'; imgStatus.style.color = '#e74c3c';
-          imgRow.style.display = 'none'; return;
-        }
-
-        imgStatus.textContent = '生成成功，扫描二维码即可查看图片'; imgStatus.style.color = '#27ae60';
-        imgRow.style.display = 'flex';
-
-        imgQrBox.innerHTML = '';
-        imgQrCode = new QRCode(imgQrBox, {
-          text: dataUrl, width: 110, height: 110,
-          correctLevel: QRCode.CorrectLevel.M
-        });
-        imgDownload.disabled = false;
       };
-      img.src = e.target.result;
+      img.onerror = function() {
+        imgStatus.textContent = '图片加载失败，请尝试其他图片'; imgStatus.style.color = '#e74c3c';
+      };
+      img.src = ev.target.result;
+    };
+    reader.onerror = function() {
+      imgStatus.textContent = '文件读取失败'; imgStatus.style.color = '#e74c3c';
     };
     reader.readAsDataURL(file);
   }
