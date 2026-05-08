@@ -503,50 +503,32 @@ document.addEventListener('DOMContentLoaded', function() {
       var img = new Image();
       img.onload = function() {
         try {
-          var maxDim = 60;
+          // Target very small image — data URL must be short for scannable QR
+          var maxDim = 30;
           var ow = img.width, oh = img.height;
           var w, h;
           var ratio = ow / oh;
-          if (ratio >= 1) {
-            w = Math.min(ow, maxDim);
-            h = Math.round(w / ratio);
-          } else {
-            h = Math.min(oh, maxDim);
-            w = Math.round(h * ratio);
-          }
-          if (w < 1) w = 1; if (h < 1) h = 1;
+          if (ratio >= 1) { w = Math.min(ow, maxDim); h = Math.max(1, Math.round(w / ratio)); }
+          else { h = Math.min(oh, maxDim); w = Math.max(1, Math.round(h * ratio)); }
 
           imgThumb.width = w; imgThumb.height = h;
           var ctx = imgThumb.getContext('2d');
           ctx.clearRect(0, 0, w, h);
           ctx.drawImage(img, 0, 0, w, h);
 
-          // aggressive compression — try to fit in ~2500 chars
-          var dataUrl = imgThumb.toDataURL('image/jpeg', 0.08);
-          if (dataUrl.length > 2900) {
-            // retry with even smaller canvas
-            var m2 = 40;
-            var w2, h2;
-            if (ratio >= 1) { w2 = m2; h2 = Math.round(w2 / ratio); }
-            else { h2 = m2; w2 = Math.round(h2 * ratio); }
-            if (w2 < 1) w2 = 1; if (h2 < 1) h2 = 1;
-            imgThumb.width = w2; imgThumb.height = h2;
-            ctx.clearRect(0, 0, w2, h2);
-            ctx.drawImage(img, 0, 0, w2, h2);
-            dataUrl = imgThumb.toDataURL('image/jpeg', 0.05);
-          }
-
+          var dataUrl = imgThumb.toDataURL('image/jpeg', 0.06);
           var bytes = Math.round(dataUrl.length * 0.75);
           imgInfo.textContent = '编码: ' + dataUrl.length + ' 字符 (~' + bytes + ' bytes)';
 
           if (dataUrl.length > 2900) {
-            imgStatus.textContent = '图片内容过于复杂，请换一张简单的图片'; imgStatus.style.color = '#e74c3c';
+            imgStatus.textContent = '图片复杂度过高，请换一张简单图片'; imgStatus.style.color = '#e74c3c';
             return;
           }
 
           imgQrBox.innerHTML = '';
           imgQrCode = new QRCode(imgQrBox, {
-            text: dataUrl, width: 110, height: 110,
+            text: dataUrl, width: 200, height: 200,
+            colorDark: '#000000', colorLight: '#ffffff',
             correctLevel: QRCode.CorrectLevel.L
           });
 
