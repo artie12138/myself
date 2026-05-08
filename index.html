@@ -22,11 +22,26 @@ body {
   width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
   text-align: center; position: relative; z-index: 1;
 }
-h1 {
-  font-size: 26px; font-weight: 700; margin-bottom: 16px;
-  background: linear-gradient(135deg, #667eea, #e84c8b);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+h1 { margin-bottom: 16px; display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
+.tetris-char {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 3px;
+  font-size: 22px; font-weight: 900; color: #fff;
+  font-family: 'PingFang SC', 'Microsoft YaHei', monospace;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.3);
+  position: relative;
 }
+.tetris-char::after {
+  content: ''; position: absolute; top: 3px; left: 3px; right: 6px; bottom: 6px;
+  background: rgba(255,255,255,0.15); border-radius: 1px;
+}
+.tc-0 { background: #ff4757; box-shadow: 0 4px 0 #c0392b, 0 6px 8px rgba(0,0,0,0.15); }
+.tc-1 { background: #ff6b81; box-shadow: 0 4px 0 #c0392b, 0 6px 8px rgba(0,0,0,0.15); }
+.tc-2 { background: #ffa502; box-shadow: 0 4px 0 #cc7a00, 0 6px 8px rgba(0,0,0,0.15); }
+.tc-3 { background: #ffdd59; box-shadow: 0 4px 0 #cc9900, 0 6px 8px rgba(0,0,0,0.15); color: #333; text-shadow: 0 2px 0 rgba(255,255,255,0.3); }
+.tc-4 { background: #2ed573; box-shadow: 0 4px 0 #1e7a3a, 0 6px 8px rgba(0,0,0,0.15); }
+.tc-5 { background: #1e90ff; box-shadow: 0 4px 0 #1155aa, 0 6px 8px rgba(0,0,0,0.15); }
+.tc-6 { background: #a55eea; box-shadow: 0 4px 0 #6c3483, 0 6px 8px rgba(0,0,0,0.15); }
 .tab-bar { display: flex; margin-bottom: 18px; border-radius: 10px; overflow: hidden; border: 2px solid #e0e0e0; }
 .tab-btn {
   flex: 1; padding: 12px 4px; font-size: 13px; font-weight: 600;
@@ -92,7 +107,8 @@ input[type=text]:focus, textarea:focus { border-color: #667eea; }
 
 @media (max-width: 380px) {
   .card { padding: 22px 14px; }
-  h1 { font-size: 22px; }
+  h1 { gap: 2px; }
+  .tetris-char { width: 32px; height: 32px; font-size: 18px; }
   .tab-btn { font-size: 11px; padding: 10px 2px; }
   input[type=text], textarea { font-size: 14px; padding: 10px; }
   .qr-box { min-height: 130px; }
@@ -105,7 +121,7 @@ input[type=text]:focus, textarea:focus { border-color: #667eea; }
 <body>
 <canvas id="bgCanvas"></canvas>
 <div class="card">
-  <h1>互娱二维码</h1>
+  <h1><span class="tetris-char tc-0">互</span><span class="tetris-char tc-6">娱</span><span class="tetris-char tc-2">二</span><span class="tetris-char tc-4">维</span><span class="tetris-char tc-5">码</span></h1>
 
   <div class="tab-bar">
     <button class="tab-btn on" data-page="gen">生成二维码</button>
@@ -404,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function() {
 (function() {
   var c = document.getElementById('bgCanvas');
   var ctx = c.getContext('2d');
-  var PX = 4; // pixel size
+  var PX = 8; // pixel size
   var W, H, COLS, ROWS;
   var dots = [];
   var tetrisBlocks = [];
