@@ -12,9 +12,9 @@ html { -webkit-tap-highlight-color: transparent; }
 body {
   min-height: 100vh; padding: 16px;
   background: #0a0a1a;
-  display: flex; justify-content: center; align-items: flex-start; padding-top: 30px;
+  display: flex; flex-direction: column; align-items: center;
   font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  overflow-x: hidden;
+  overflow-x: hidden; gap: 0;
 }
 #bgCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 .card {
@@ -22,26 +22,57 @@ body {
   width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
   text-align: center; position: relative; z-index: 1;
 }
-h1 { margin-bottom: 16px; display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
-.tetris-char {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 38px; height: 38px; border-radius: 3px;
-  font-size: 22px; font-weight: 900; color: #fff;
+#pixel-logo {
+  position: relative; z-index: 1; margin-bottom: 20px; margin-top: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+#pixel-logo .char-block {
+  width: 56px; height: 56px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; font-weight: 900; color: #fff; position: relative;
   font-family: 'PingFang SC', 'Microsoft YaHei', monospace;
-  text-shadow: 0 2px 0 rgba(0,0,0,0.3);
-  position: relative;
+  text-shadow: 0 3px 0 rgba(0,0,0,0.35);
+  animation: logoBounce 2s ease-in-out infinite;
 }
-.tetris-char::after {
-  content: ''; position: absolute; top: 3px; left: 3px; right: 6px; bottom: 6px;
-  background: rgba(255,255,255,0.15); border-radius: 1px;
+#pixel-logo .char-block:nth-child(1) { animation-delay: 0s; }
+#pixel-logo .char-block:nth-child(2) { animation-delay: 0.15s; }
+#pixel-logo .char-block:nth-child(3) { animation-delay: 0.3s; }
+#pixel-logo .char-block:nth-child(4) { animation-delay: 0.45s; }
+#pixel-logo .char-block:nth-child(5) { animation-delay: 0.6s; }
+@keyframes logoBounce {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+  50% { transform: translateY(0); }
 }
-.tc-0 { background: #ff4757; box-shadow: 0 4px 0 #c0392b, 0 6px 8px rgba(0,0,0,0.15); }
-.tc-1 { background: #ff6b81; box-shadow: 0 4px 0 #c0392b, 0 6px 8px rgba(0,0,0,0.15); }
-.tc-2 { background: #ffa502; box-shadow: 0 4px 0 #cc7a00, 0 6px 8px rgba(0,0,0,0.15); }
-.tc-3 { background: #ffdd59; box-shadow: 0 4px 0 #cc9900, 0 6px 8px rgba(0,0,0,0.15); color: #333; text-shadow: 0 2px 0 rgba(255,255,255,0.3); }
-.tc-4 { background: #2ed573; box-shadow: 0 4px 0 #1e7a3a, 0 6px 8px rgba(0,0,0,0.15); }
-.tc-5 { background: #1e90ff; box-shadow: 0 4px 0 #1155aa, 0 6px 8px rgba(0,0,0,0.15); }
-.tc-6 { background: #a55eea; box-shadow: 0 4px 0 #6c3483, 0 6px 8px rgba(0,0,0,0.15); }
+.char-block::after {
+  content: ''; position: absolute; top: 4px; left: 4px; right: 8px; bottom: 8px;
+  background: rgba(255,255,255,0.18); border-radius: 2px;
+}
+.char-block .px-dot {
+  position: absolute; width: 6px; height: 6px; background: rgba(0,0,0,0.2); border-radius: 1px;
+}
+.char-block .px-dot:nth-child(1) { top: 8px; left: 10px; }
+.char-block .px-dot:nth-child(2) { bottom: 8px; right: 10px; }
+.cb-red    { background: #ff4757; box-shadow: 0 6px 0 #b8313f, 0 8px 12px rgba(0,0,0,0.3); }
+.cb-purple { background: #a55eea; box-shadow: 0 6px 0 #6c3483, 0 8px 12px rgba(0,0,0,0.3); }
+.cb-orange { background: #ffa502; box-shadow: 0 6px 0 #cc7a00, 0 8px 12px rgba(0,0,0,0.3); }
+.cb-green  { background: #2ed573; box-shadow: 0 6px 0 #1a7a3a, 0 8px 12px rgba(0,0,0,0.3); }
+.cb-blue   { background: #1e90ff; box-shadow: 0 6px 0 #1155aa, 0 8px 12px rgba(0,0,0,0.3); }
+
+/* pixel decorations around logo */
+.px-deco {
+  position: absolute; border-radius: 2px; z-index: -1;
+  animation: decoFloat 3s ease-in-out infinite;
+}
+.px-deco.sm { width: 8px; height: 8px; }
+.px-deco.md { width: 12px; height: 12px; }
+@keyframes decoFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
+  50% { transform: translateY(-12px) rotate(10deg); opacity: 1; }
+}
+
+.card {
+  background: #fff; border-radius: 20px; padding: 28px 20px;
 .tab-bar { display: flex; margin-bottom: 18px; border-radius: 10px; overflow: hidden; border: 2px solid #e0e0e0; }
 .tab-btn {
   flex: 1; padding: 12px 4px; font-size: 13px; font-weight: 600;
@@ -107,8 +138,8 @@ input[type=text]:focus, textarea:focus { border-color: #667eea; }
 
 @media (max-width: 380px) {
   .card { padding: 22px 14px; }
-  h1 { gap: 2px; }
-  .tetris-char { width: 32px; height: 32px; font-size: 18px; }
+  #pixel-logo { gap: 4px; margin-bottom: 14px; }
+  #pixel-logo .char-block { width: 42px; height: 42px; font-size: 24px; }
   .tab-btn { font-size: 11px; padding: 10px 2px; }
   input[type=text], textarea { font-size: 14px; padding: 10px; }
   .qr-box { min-height: 130px; }
@@ -120,8 +151,20 @@ input[type=text]:focus, textarea:focus { border-color: #667eea; }
 </head>
 <body>
 <canvas id="bgCanvas"></canvas>
+<div id="pixel-logo">
+  <div class="px-deco sm" style="top:-12px;left:-16px;background:#ff4757;animation-delay:0s;"></div>
+  <div class="px-deco md" style="top:-8px;right:-20px;background:#2ed573;animation-delay:0.5s;"></div>
+  <div class="px-deco sm" style="bottom:-6px;left:-10px;background:#1e90ff;animation-delay:1s;"></div>
+  <div class="px-deco md" style="bottom:-14px;right:-10px;background:#ffa502;animation-delay:1.5s;"></div>
+  <div class="px-deco sm" style="top:20px;left:-22px;background:#a55eea;animation-delay:2s;"></div>
+  <div class="px-deco sm" style="top:16px;right:-18px;background:#ffdd59;animation-delay:2.5s;"></div>
+  <div class="char-block cb-red"><span class="px-dot"></span><span class="px-dot"></span>互</div>
+  <div class="char-block cb-purple"><span class="px-dot"></span><span class="px-dot"></span>娱</div>
+  <div class="char-block cb-orange"><span class="px-dot"></span><span class="px-dot"></span>二</div>
+  <div class="char-block cb-green"><span class="px-dot"></span><span class="px-dot"></span>维</div>
+  <div class="char-block cb-blue"><span class="px-dot"></span><span class="px-dot"></span>码</div>
+</div>
 <div class="card">
-  <h1><span class="tetris-char tc-0">互</span><span class="tetris-char tc-6">娱</span><span class="tetris-char tc-2">二</span><span class="tetris-char tc-4">维</span><span class="tetris-char tc-5">码</span></h1>
 
   <div class="tab-bar">
     <button class="tab-btn on" data-page="gen">生成二维码</button>
